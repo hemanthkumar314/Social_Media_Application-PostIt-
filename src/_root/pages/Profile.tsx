@@ -2,12 +2,12 @@ import {
   Route,
   Routes,
   Link,
-  Outlet,
+  Navigate,
   useParams,
   useLocation,
 } from "react-router-dom";
 
-import { LikedPosts } from "@/_root/pages";
+import LikedPosts from "./LikedPosts";
 import { useUserContext } from "@/context/AuthContext";
 import Loader from "@/components/shared/Loader";
 import { Button } from "@/components/ui/button";
@@ -31,14 +31,16 @@ const Profile = () => {
   const { user } = useUserContext();
   const { pathname } = useLocation();
 
-  const { data: currentUser } = useGetUserById(id || "");
+  const { data: currentUser, isPending, isError } = useGetUserById(id || "");
 
-  if (!currentUser)
+  if (isPending)
     return (
       <div className="w-full h-full flex-center">
         <Loader />
       </div>
     );
+
+  if (isError || !currentUser) return <div role="alert" className="common-container">Unable to load this profile.</div>;
 
   return (
     <div className="profile-container">
@@ -62,9 +64,7 @@ const Profile = () => {
             </div>
 
             <div className="z-20 flex flex-wrap items-center justify-center gap-8 mt-10 xl:justify-start">
-              <StatBlock value={currentUser.posts.length} label="Posts" />
-              <StatBlock value={20} label="Followers" />
-              <StatBlock value={20} label="Following" />
+              <StatBlock value={currentUser.posts?.length ?? 0} label="Posts" />
             </div>
 
             <p className="max-w-screen-sm text-center small-medium md:base-medium xl:text-left mt-7">
@@ -91,8 +91,8 @@ const Profile = () => {
               </Link>
             </div>
             <div className={`${user.id === id && "hidden"}`}>
-              <Button type="button" className="px-8 shad-button_primary">
-                Follow
+              <Button type="button" disabled title="Following is coming soon" className="px-8 shad-button_primary">
+                Follow (coming soon)
               </Button>
             </div>
           </div>
@@ -133,13 +133,13 @@ const Profile = () => {
       <Routes>
         <Route
           index
-          element={<GridPostList posts={currentUser.posts} ShowUser={false} />}
+          element={<GridPostList posts={currentUser.posts ?? []} ShowUser={false} />}
         />
         
-          <Route path="/liked-posts" element={<LikedPosts/>} />
+          <Route path="liked-posts" element={currentUser.$id === user.id ? <LikedPosts/> : <Navigate to={`/profile/${id}`} replace />} />
+          <Route path="*" element={<Navigate to={`/profile/${id}`} replace />} />
         
       </Routes>
-      <Outlet />
     </div>
   );
 };

@@ -1,0 +1,8 @@
+{
+  "application": "PostIt",
+  "asset": "public/assets/images/postit-auth-collage.png",
+  "approvedOption": 1,
+  "mode": "Built-in image_gen",
+  "referenceImages": [],
+  "prompt": "Use case: ads-marketing. Asset type: portrait right-side authentication-page artwork for PostIt, a dark violet social photo sharing app with uploading photos, exploring a feed, likes and saved posts. Create a polished photographic mosaic of everyday stories: mountain travel landscape, architectural street detail, coffee and food still life, friends smiling candidly, a small artistic portrait, a colorful creative workspace. These should be distinct realistic photographs arranged as a cohesive wall of slightly overlapping rounded photo cards with subtle depth and a few tiny unobtrusive heart and bookmark symbols. Deep near-black background and subtle lavender light tie the cards together. Portrait 2:3 composition, edge-to-edge imagery, visually rich but tidy, central story cards must survive a narrow website crop. Editorial, premium, warm human feeling. No text, letters, words, logos, brand marks, watermarks, labels, numbers or browser mockup. This is an artwork option for preview; not a whole website screenshot."
+}

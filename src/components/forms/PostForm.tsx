@@ -31,41 +31,47 @@ const PostForm = ({post,action}:PostFormProps) => {
     const navigate = useNavigate()
     
     const form = useForm<z.infer<typeof PostValidation>>({
-        resolver: zodResolver(PostValidation),
+        resolver: zodResolver(PostValidation.refine(
+            (values) => values.file.length > 0 || (action === 'Update' && !!post?.imageUrl),
+            { message: 'Please select a photo.', path: ['file'] },
+        )),
         defaultValues: {
             caption: post?post?.caption: "",
             file:[],
             location: post ? post?.location: "",
-            tags: post ? post.tags.join(','): ''
+            tags: post ? (post.tags ?? []).join(','): ''
         },
     })
     
     async function onSubmit(values: z.infer<typeof PostValidation>) {
-        if(post && action === 'Update')
-        {
-            const updatedPost = updatePost({
+        try {
+            if (action === 'Update' && !post) return toast({title:'Unable to load this post.'});
+            if(post && action === 'Update') {
+                const updatedPost = await updatePost({
                 ...values,
                 postId:post.$id,
                 imageId:post?.imageId,
                 imageUrl:post?.imageUrl,
-            })
+                })
 
-            if(!updatedPost){
-                toast({title:'Please try again'})
+                if(!updatedPost){
+                    return toast({title:'Unable to update the post. Please try again.'})
+                }
+
+                return navigate(`/posts/${post.$id}`)
             }
 
-            return navigate(`/posts/${post.$id}`)
+            const newPost = await createPost({
+                ...values,
+                userId:user.id,
+            })
+            if(!newPost){
+                return toast({title:'Unable to create the post. Please try again.'})
+            }
+            navigate('/');
+        } catch {
+            toast({title:'Unable to save the post. Please try again.'});
         }
-        
-        const newPost = await createPost({
-            ...values,
-            userId:user.id,
-        })
-        if(!newPost){
-            toast({title:'Please try again'})
-        }
-        navigate('/');
-        // console.log(values)
     }
     
     return (
@@ -128,14 +134,13 @@ const PostForm = ({post,action}:PostFormProps) => {
                 />
 
                 <div className="flex items-center justify-end gap-4">
-                    <Button type="button" className="shad-button_dark_4">
+                    <Button type="button" className="shad-button_dark_4" onClick={() => navigate(action === 'Update' && post ? `/posts/${post.$id}` : '/')} disabled={form.formState.isSubmitting}>
                         Cancel
                     </Button>
                     <Button type="submit" className="whitespace-normal shad-button_primary"
-                    disabled={isLoadingCreate || isLoadingUpdate}
+                    disabled={form.formState.isSubmitting || isLoadingCreate || isLoadingUpdate}
                     >
-                        {isLoadingCreate || isLoadingUpdate && 'Loading..'}
-                        {action} Post
+                        {form.formState.isSubmitting || isLoadingCreate || isLoadingUpdate ? 'Saving...' : `${action} Post`}
                     </Button>
                 </div>
             </form>

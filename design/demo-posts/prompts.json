@@ -1,0 +1,21 @@
+{
+  "generator": "Built-in image_gen",
+  "assets": [
+    {
+      "filename": "avengers.png",
+      "prompt": "Square editorial still-life photograph for a social-media movie-night discussion. A cozy home cinema with a large bowl of popcorn, two paper cinema tickets with no readable writing, a red blanket and blue ambient lighting. A screen in the softly blurred background shows only abstract heroic red and blue light, no characters or identifiable movie imagery. Warm, inviting, high-quality realistic photography, a film enthusiast's weekend watch-party mood. No people, branding, readable text, logos or watermarks."
+    },
+    {
+      "filename": "doomsday.png",
+      "prompt": "Square atmospheric science-fiction concept illustration for a social-media film discussion. An empty monumental stone hall with a luminous emerald circular portal, distant storm clouds visible through tall arches and subtle metallic geometric details. No characters, masks, costumes, weapons, or recognizable franchise symbols. Cinematic green and silver lighting, detailed painterly environment art, dramatic but peaceful and entirely original. No text, logos or watermarks."
+    },
+    {
+      "filename": "classic-car.png",
+      "prompt": "Use case: photorealistic-natural. Asset: square 1024x1024 car enthusiast photo for a demo social-media account. An elegant red 1960s-inspired classic sports coupe with chrome trim parked by a winding coastal road at golden hour, three-quarter front angle, entire car visible, ocean and hazy cliffs in the background. Rich natural reflections, realistic tires and bodywork, tasteful editorial automotive photography, warm sunset. Original unbranded car design. No people, readable plates, logos, text or watermarks."
+    },
+    {
+      "filename": "night-car.png",
+      "prompt": "Use case: photorealistic-natural. Asset: square 1024x1024 automotive enthusiast photo for a demo social-media account. A low-slung midnight-blue modern performance coupe parked safely beside a neon-lit urban garage after rain, three-quarter rear angle with the entire car visible. Restrained aerodynamic styling, vivid red taillights, reflective wet asphalt, cool cyan and violet light, detailed realistic automotive photography. Original unbranded vehicle design. No people, drifting, racing, readable license plates, logos, text or watermarks."
+    }
+  ]
+}

@@ -1,8 +1,7 @@
-import React, { createContext,useContext,useEffect,useMemo,useState } from "react"
+import React, { createContext,useCallback,useContext,useEffect,useMemo,useState } from "react"
 import { INITIAL_USER } from "./INITIAL_USER"
 import { IContexttype, IUser } from "@/types"
 import { getCurrentUser } from "@/lib/appwrite/api"
-import { useNavigate } from "react-router-dom"
 
 const INITIAL_STATE={
     user:INITIAL_USER,
@@ -18,12 +17,10 @@ const AuthContext = createContext<IContexttype>(INITIAL_STATE)
 const AuthProvider = ({children}:{children:React.ReactNode}) => {
 
     const [user, setUser] = useState<IUser>(INITIAL_USER);
-    const [isLoading, setisLoading] = useState(false);
+    const [isLoading, setisLoading] = useState(true);
     const [isAuthenticated,setIsAuthenticated] = useState(false);
 
-    const navigate=useNavigate();
-
-    const checkAuthUser = async(): Promise<boolean> =>{
+    const checkAuthUser = useCallback(async(): Promise<boolean> =>{
         try{
             const currentAccount = await getCurrentUser();
 
@@ -32,7 +29,6 @@ const AuthProvider = ({children}:{children:React.ReactNode}) => {
                     id:currentAccount.$id,
                     name:currentAccount.name,
                     username:currentAccount.username,
-                    email:currentAccount.email,
                     imageUrl:currentAccount.imageUrl,
                     bio:currentAccount.bio
                 })
@@ -40,25 +36,23 @@ const AuthProvider = ({children}:{children:React.ReactNode}) => {
 
                 return true;
             }
+            setUser(INITIAL_USER);
+            setIsAuthenticated(false);
             return false;
         }catch(err){
             console.log(err);
+            setUser(INITIAL_USER);
+            setIsAuthenticated(false);
             return false
         }
         finally{
             setisLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
-      setisLoading(true)
-        const cookieFallback = localStorage.getItem("cookieFallback");
-        if (cookieFallback === "[]" || cookieFallback === null || cookieFallback === undefined)
-          navigate("/sign-in");
-    
-        checkAuthUser();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, []);
+        void checkAuthUser();
+      }, [checkAuthUser]);
 
     const value = useMemo(() => ({
       user,
@@ -67,7 +61,7 @@ const AuthProvider = ({children}:{children:React.ReactNode}) => {
       isAuthenticated,
       setIsAuthenticated,
       checkAuthUser
-  }), [user, isLoading, isAuthenticated]);
+  }), [user, isLoading, isAuthenticated, checkAuthUser]);
   
     
   return (

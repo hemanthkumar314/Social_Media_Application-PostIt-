@@ -12,7 +12,7 @@ export const useCreateUserAccount =()=>{
 
 export const useSignInAccount =()=>{
     return useMutation({
-        mutationFn:(user:{email:string,password:string})=>signInAccount(user)
+        mutationFn:(user:{username:string,password:string})=>signInAccount(user)
     })
 }
 
@@ -30,6 +30,8 @@ export const useCreatePost =()=>{
             queryclient.invalidateQueries({
                 queryKey:[QUERY_KEYS.GET_RECENT_POSTS],
             })
+            queryclient.invalidateQueries({queryKey:[QUERY_KEYS.GET_POSTS]})
+            queryclient.invalidateQueries({queryKey:[QUERY_KEYS.GET_USER_BY_ID]})
         }
     })
 }
@@ -130,6 +132,10 @@ export const useUpdatePost =()=>{
             queryclient.invalidateQueries({
                 queryKey:[QUERY_KEYS.GET_POST_BY_ID,data?.$id]
             })
+            queryclient.invalidateQueries({queryKey:[QUERY_KEYS.GET_RECENT_POSTS]})
+            queryclient.invalidateQueries({queryKey:[QUERY_KEYS.GET_POSTS]})
+            queryclient.invalidateQueries({queryKey:[QUERY_KEYS.GET_USER_BY_ID]})
+            queryclient.invalidateQueries({queryKey:[QUERY_KEYS.SEARCH_POSTS]})
         }
     })
 }
@@ -151,22 +157,29 @@ export const useDeletePost =()=>{
 export const useGetPosts = () =>{
     return useInfiniteQuery({
         queryKey:[QUERY_KEYS.GET_POSTS],
-        queryFn:getInfinitePosts,
-        getNextPageParam:(lastPage)=>{
-            if(lastPage && lastPage.documents.length === 0) return null;
-            
-            const lastId = lastPage?.documents[lastPage?.documents.length-1].$id;
-
-            return lastId;
+        initialPageParam: undefined as string | undefined,
+        queryFn:async ({pageParam}) => {
+            const posts = await getInfinitePosts({pageParam});
+            if (!posts) throw new Error('Unable to load posts');
+            return posts;
+        },
+        getNextPageParam:(lastPage, pages)=>{
+            const loaded = pages.reduce((total, page) => total + page.documents.length, 0);
+            if (lastPage.documents.length === 0 || loaded >= lastPage.total) return undefined;
+            return lastPage.documents[lastPage.documents.length - 1].$id;
         }
     })
 }
 
 export const useSearchPosts = (searchterm:string) =>{
     return useQuery({
-        queryKey:[QUERY_KEYS.SEARCH_POSTS,searchterm],
-        queryFn:() => getSearchPosts(searchterm),
-        enabled: !! searchterm
+        queryKey:[QUERY_KEYS.SEARCH_POSTS,searchterm.trim()],
+        queryFn:async () => {
+            const posts = await getSearchPosts(searchterm.trim());
+            if (!posts) throw new Error('Unable to search posts');
+            return posts;
+        },
+        enabled: !!searchterm.trim()
     })
 }
 

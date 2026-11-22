@@ -13,11 +13,9 @@ const PostDetails = () => {
   const {id}=useParams()
   const { user } = useUserContext()
 
-  const { data:post,isPending} = useGetPostbyId(id || '');
+  const { data:post,isPending,isError} = useGetPostbyId(id || '');
 
-  const handleDeletePost = ()=>{
-    
-  }
+  if (!isPending && (isError || !post)) return <p role="alert" className="common-container">Unable to load this post.</p>;
   
   return (
     <div className="post_details-container">
@@ -30,7 +28,7 @@ const PostDetails = () => {
           />
           <div className="post_details-info">
             <div className="w-full flex-between">
-              <Link to ={`/profile/${post?.creator.$id}`} 
+              <Link to ={`/profile/${post?.creator?.$id}`}
               className="flex items-center gap-3">
                   <img 
                       src={post?.creator?.imageUrl}
@@ -40,7 +38,7 @@ const PostDetails = () => {
               
                   <div className="flex flex-col ">
                       <p className="base-medium lg:body-bold text-light-1">
-                        {post?.creator.name}
+                        {post?.creator?.name}
                       </p>
                       <div className="gap-2 flex-center text-light-3">
                           <p className="subtle-semibold lg:small-regular">
@@ -56,16 +54,18 @@ const PostDetails = () => {
 
               <div className="gap-1 flex-center">
                 <Link to ={`/update-post/${post?.$id}`} 
-                className={`${user.id!==post?.creator.$id && 'hidden'}`}>
+                className={`${user.id!==post?.creator?.$id && 'hidden'}`}>
                   <img src='/assets/icons/edit.svg' 
                   width={24} height={24} alt="edit"/>
                 </Link>
                 
                 <Button 
-                  onClick={handleDeletePost} 
+                  disabled
+                  title="Post deletion will be available after backend setup"
+                  aria-label="Delete post (unavailable)"
                   variant="ghost"
                   className={`ghost_details-delete_btn 
-                      ${user.id!==post?.creator.$id && 'hidden'}`}
+                      ${user.id!==post?.creator?.$id && 'hidden'}`}
                 >
                   <img
                     src="/assets/icons/delete.svg"
@@ -83,7 +83,7 @@ const PostDetails = () => {
             <div className="flex flex-col flex-1 w-full small-medium lg:base-regular">
                 <p className="">{post?.caption}</p>
                 <ul className="flex gap-1 mt-2">
-                    {post?.tags.map((tag:string)=>(
+                    {post?.tags?.map((tag:string)=>(
                         <li key={tag} className="text-light-3">
                             #{tag}
                         </li>

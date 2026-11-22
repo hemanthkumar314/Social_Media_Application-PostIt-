@@ -5,15 +5,16 @@ import GridPostList from "./GridPostList";
 // import React from 'react'
 type SearchResultsProps = {
   isSearchFetching:boolean;
-  searchedPosts:Models.Document[]
+  searchedPosts?:Models.DocumentList<Models.Document>;
+  isError?:boolean;
 }
-const SearchResults = ({isSearchFetching,searchedPosts}:SearchResultsProps) => {
+const SearchResults = ({isSearchFetching,searchedPosts,isError}:SearchResultsProps) => {
   if(isSearchFetching) return <Loader/>
+  if(isError) return <p role="alert">Unable to search posts. Please try again.</p>
 
   if(searchedPosts && searchedPosts.documents.length > 0)
   {
-    return
-    (
+    return (
       <GridPostList posts={searchedPosts.documents}/>
     )
   }

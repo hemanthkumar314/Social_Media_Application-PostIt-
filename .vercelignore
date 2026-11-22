@@ -1,0 +1,12 @@
+.git
+node_modules
+dist
+artifacts
+design
+tests
+appwrite
+scripts
+.env
+.env.*
+coverage
+*.log

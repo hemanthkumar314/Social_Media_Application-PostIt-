@@ -1,3 +1,13 @@
 
-.env.local
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+coverage/
+artifacts/
+.vercel/
+.netlify/
+*.log
+*.tsbuildinfo
 

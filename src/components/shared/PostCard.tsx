@@ -41,7 +41,7 @@ const PostCard = ({post}:PostCardProps) => {
                 className={`${user.id!==post.creator.$id && "hidden"}`}
                 >
                     <img
-                        src="./assets/icons/edit.svg"
+                        src="/assets/icons/edit.svg"
                         alt="edit"
                         width={20}
                         height={20}
@@ -53,7 +53,7 @@ const PostCard = ({post}:PostCardProps) => {
                 <div className="py-5 small-medium lg:base-medium">
                     <p className="">{post.caption}</p>
                     <ul className="flex gap-1 mt-2">
-                        {post.tags.map((tag:string)=>(
+                        {post.tags?.map((tag:string)=>(
                             <li key={tag} className="text-light-3">
                                 #{tag}
                             </li>
@@ -64,6 +64,8 @@ const PostCard = ({post}:PostCardProps) => {
                     src={post.imageUrl}
                     className="post-card_img"
                     alt="post image"
+                    loading="lazy"
+                    decoding="async"
                 />
             </Link>
             

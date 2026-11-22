@@ -5,15 +5,11 @@ import { Models } from "appwrite";
 
 
 const Saved = () => {
-  const { data: currentUser } = useGetCurrentUser();
+  const { data: currentUser, isPending, isError } = useGetCurrentUser();
 
-  const savePosts = currentUser?.save
-    .map((savePost: Models.Document) => ({
-      ...savePost.post,
-      creator: {
-        imageUrl: currentUser.imageUrl,
-      },
-    }))
+  const savePosts = (currentUser?.save ?? [])
+    .filter((savePost: Models.Document) => savePost.post?.$id)
+    .map((savePost: Models.Document) => savePost.post)
     .reverse();
 
   return (
@@ -29,16 +25,18 @@ const Saved = () => {
         <h2 className="w-full text-left h3-bold md:h2-bold">Saved Posts</h2>
       </div>
 
-      {!currentUser ? (
+      {isPending ? (
         <Loader />
+      ) : isError || !currentUser ? (
+        <p role="alert">Unable to load saved posts.</p>
       ) : (
-        <ul className="flex justify-center w-full max-w-5xl gap-9">
+        <div className="flex justify-center w-full max-w-5xl gap-9">
           {savePosts.length === 0 ? (
             <p className="text-light-4">No available posts</p>
           ) : (
             <GridPostList posts={savePosts} ShowStats={false} />
           )}
-        </ul>
+        </div>
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
 
-import { convertFileToUrl } from "@/lib/utils";
+import useImagePreview from "@/hooks/useImagePreview";
 
 type ProfileUploaderProps = {
   fieldChange: (files: File[]) => void;
@@ -9,29 +9,38 @@ type ProfileUploaderProps = {
 };
 
 const ProfileUploader = ({ fieldChange, mediaUrl }: ProfileUploaderProps) => {
-  const [file, setFile] = useState<File[]>([]);
-  const [fileUrl, setFileUrl] = useState<string>(mediaUrl);
+  const [file, setFile] = useState<File>();
+  const [error, setError] = useState('');
+  const fileUrl = useImagePreview(file, mediaUrl);
 
   const onDrop = useCallback(
     (acceptedFiles: FileWithPath[]) => {
-      setFile(acceptedFiles);
-      fieldChange(acceptedFiles);
-      setFileUrl(convertFileToUrl(acceptedFiles[0]));
+      const selectedFile = acceptedFiles[0];
+      if (!selectedFile) return;
+      setError('');
+      setFile(selectedFile);
+      fieldChange([selectedFile]);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [file]
+    [fieldChange]
   );
 
   const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
+    onDropAccepted: onDrop,
+    onDropRejected: () => setError('Please select one PNG, JPEG, or WebP image up to 10 MiB.'),
+    multiple: false,
+    maxFiles: 1,
+    maxSize: 10 * 1024 * 1024,
     accept: {
-      "image/*": [".png", ".jpeg", ".jpg"],
+      "image/png": [".png"],
+      "image/jpeg": [".jpeg", ".jpg"],
+      "image/webp": [".webp"],
     },
   });
 
   return (
     <div {...getRootProps()}>
-      <input {...getInputProps()} className="cursor-pointer" />
+      <input {...getInputProps({'aria-label': 'Upload profile photo'})} className="cursor-pointer" />
+      {error && <p role="alert" className="text-red">{error}</p>}
 
       <div className="gap-4 cursor-pointer flex-center">
         <img

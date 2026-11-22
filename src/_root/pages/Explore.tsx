@@ -10,27 +10,19 @@ import { useInView } from "react-intersection-observer";
 
 const Explore = () => {
   const {ref,inView} = useInView();
-  const { data:posts, fetchNextPage, hasNextPage} = useGetPosts();
+  const { data:posts, fetchNextPage, hasNextPage, isPending, isError, isFetchingNextPage, isFetchNextPageError, refetch} = useGetPosts();
   const [SearchValue, setSearchValue] = useState('');
-  const deBouncedvalue = useDebounce(SearchValue,500);
+  const searchTerm = SearchValue.trim();
+  const deBouncedvalue = useDebounce(searchTerm,500);
 
-  const { data:searchedPosts, isFetching:isSearchFetching } = useSearchPosts(deBouncedvalue);
+  const { data:searchedPosts, isFetching:isSearchFetching, isError:isSearchError } = useSearchPosts(deBouncedvalue);
 
   useEffect(()=>{
-    if(inView && !SearchValue) fetchNextPage();
-  },[inView,SearchValue,fetchNextPage])
+    if(inView && !searchTerm && hasNextPage && !isFetchingNextPage && !isFetchNextPageError) void fetchNextPage();
+  },[inView,searchTerm,hasNextPage,isFetchingNextPage,isFetchNextPageError,fetchNextPage])
 
-  if(!posts)
-  {
-    return (
-      <div className='w-full h-full flex-center'>
-        <Loader/>
-      </div>
-    )
-  }
-  const Showsearchresults = SearchValue !=='';
-  const ShowPosts = !Showsearchresults && 
-                    posts.pages.every((item)=>item.documents.length===0);
+  const Showsearchresults = searchTerm !=='';
+  const ShowPosts = posts?.pages.every((item)=>item.documents.length===0);
   
   return (
     <div className='explore-container'>
@@ -47,6 +39,7 @@ const Explore = () => {
           <Input
             type='text'
             placeholder='Search'
+            aria-label='Search posts'
             className='explore-search'
             value={SearchValue}
             onChange={(e)=> setSearchValue(e.target.value)}
@@ -55,16 +48,7 @@ const Explore = () => {
       </div>
       
       <div className='w-full max-w-5xl mt-16 flex-between mb-7'>
-        <h3 className='body-bold md:h3-bold'>Popular Today</h3>
-        <div className='gap-3 px-4 py-2 cursor-pointer flex-center bg-dark-3 rounded-xl'>
-          <p className='small-medium md:base-medium text-light-2'>All</p>
-          <img
-            src='/assets/icons/filter.svg'
-            alt='filter'
-            width={24}
-            height={24}
-          />
-        </div>
+        <h3 className='body-bold md:h3-bold'>{Showsearchresults ? 'Search results' : 'Latest posts'}</h3>
         
       </div>
 
@@ -72,21 +56,25 @@ const Explore = () => {
         { Showsearchresults ? 
           (
             <SearchResults
-              isSearchFetching = {isSearchFetching}
+              isSearchFetching = {isSearchFetching || searchTerm !== deBouncedvalue}
               searchedPosts={searchedPosts}
+              isError={isSearchError}
             />
-          ): ShowPosts ?
+          ): isPending ? <Loader /> : isError && !posts ? (
+            <div role="alert"><p>Unable to load posts.</p><button type="button" onClick={() => void refetch()} className="text-primary-500">Try again</button></div>
+          ) : ShowPosts ?
           (
             <p className='w-full mt-10 text-center text-light-4'>
               End of Posts
             </p>
-          ) : posts.pages.map((item,index)=>(
+          ) : posts?.pages.map((item,index)=>(
             <GridPostList key={`page-${index}`} posts={item.documents}/>
           ))
         }
       </div>
 
-      {hasNextPage && !SearchValue && (
+      {isFetchNextPageError && !Showsearchresults && <button type="button" className="text-primary-500" onClick={() => void fetchNextPage()}>Unable to load more posts. Try again</button>}
+      {hasNextPage && !Showsearchresults && !isFetchNextPageError && (
         <div ref={ref} className='mt-10'>
           <Loader/>
         </div>

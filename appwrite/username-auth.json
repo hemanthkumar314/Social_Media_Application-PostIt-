@@ -1,0 +1,15 @@
+{
+  "functionId": "postit-auth",
+  "name": "PostIt username authentication",
+  "runtime": "node-22",
+  "entrypoint": "src/main.js",
+  "commands": "",
+  "execute": ["any"],
+  "scopes": ["users.read"],
+  "events": [],
+  "timeout": 30,
+  "logging": false,
+  "enabled": true,
+  "buildSpecification": "s-2vcpu-2gb",
+  "runtimeSpecification": "s-0.5vcpu-512mb"
+}

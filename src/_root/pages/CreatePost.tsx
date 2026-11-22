@@ -6,7 +6,7 @@ const CreatePost = () => {
       <div className="common-container">
         <div className="justify-start w-full max-w-5xl gap-3 flex-start">
           <img
-            src="./assets/icons/add-post.svg"
+            src="/assets/icons/add-post.svg"
             width={36}
             height={36}
             alt="add"

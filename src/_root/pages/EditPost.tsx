@@ -1,13 +1,17 @@
 import PostForm from "@/components/forms/PostForm";
 import Loader from "@/components/shared/Loader";
 import { useGetPostbyId } from "@/lib/react-query/queriesAndMutations";
+import { useUserContext } from "@/context/AuthContext";
 import { useParams } from "react-router-dom";
 
 const EditPost = () => {
   const { id } = useParams();
-  const { data:post , isPending } = useGetPostbyId(id||'');
+  const { data:post , isPending, isError } = useGetPostbyId(id||'');
+  const { user } = useUserContext();
 
   if(isPending) return <Loader/>
+  if(isError || !post) return <p role="alert" className="common-container">Unable to load this post.</p>;
+  if(post.creator?.$id !== user.id) return <p role="alert" className="common-container">You can only edit your own posts.</p>;
   
   return (
     <div className="flex flex-1">

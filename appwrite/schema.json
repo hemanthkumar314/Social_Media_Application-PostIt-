@@ -1,0 +1,61 @@
+{
+  "projectId": "6b0309630017c47fc29c",
+  "endpoint": "https://sgp.cloud.appwrite.io/v1",
+  "databaseId": "6b0309f70018f20a65ff",
+  "databaseName": "SnapGram",
+  "tables": [
+    {
+      "id": "users", "name": "Users", "rowSecurity": true,
+      "permissions": ["read(\"users\")", "create(\"users\")"],
+      "columns": [
+        {"key":"accountId","type":"string","size":36,"required":true},
+        {"key":"name","type":"string","size":128,"required":true},
+        {"key":"username","type":"string","size":64,"required":true},
+        {"key":"bio","type":"string","size":2200,"required":false},
+        {"key":"imageUrl","type":"string","size":2048,"required":true},
+        {"key":"imageId","type":"string","size":36,"required":false}
+      ],
+      "indexes": [{"key":"account_id","type":"unique","attributes":["accountId"]},{"key":"username","type":"key","attributes":["username"]}]
+    },
+    {
+      "id": "posts", "name": "Posts", "rowSecurity": true,
+      "permissions": ["read(\"users\")", "create(\"users\")"],
+      "columns": [
+        {"key":"creator","type":"string","size":36,"required":true},
+        {"key":"caption","type":"string","size":2200,"required":true},
+        {"key":"imageUrl","type":"string","size":2048,"required":true},
+        {"key":"imageId","type":"string","size":36,"required":true},
+        {"key":"location","type":"string","size":100,"required":false},
+        {"key":"tags","type":"string","size":64,"required":false,"array":true}
+      ],
+      "indexes": [{"key":"creator","type":"key","attributes":["creator"]},{"key":"caption_search","type":"fulltext","attributes":["caption"]}]
+    },
+    {
+      "id": "likes", "name": "Likes", "rowSecurity": true,
+      "permissions": ["read(\"users\")", "create(\"users\")"],
+      "columns": [{"key":"user","type":"string","size":36,"required":true},{"key":"post","type":"string","size":36,"required":true}],
+      "indexes": [{"key":"user_post","type":"unique","attributes":["user","post"]},{"key":"post","type":"key","attributes":["post"]}]
+    },
+    {
+      "id": "saves", "name": "Saves", "rowSecurity": true,
+      "permissions": ["create(\"users\")"],
+      "columns": [{"key":"user","type":"string","size":36,"required":true},{"key":"post","type":"string","size":36,"required":true}],
+      "indexes": [{"key":"user_post","type":"unique","attributes":["user","post"]}]
+    }
+  ],
+  "bucket": {
+    "id": "images", "name": "Images", "fileSecurity": true,
+    "permissions": ["create(\"users\")"],
+    "maximumFileSize": 10485760,
+    "encryption": true, "antivirus": true, "transformations": false,
+    "allowedFileExtensions": ["png", "jpg", "jpeg", "webp"],
+    "filePermissions": "Public read by URL; only the uploading account can update or delete its files."
+  },
+  "accessSummary": {
+    "users": "Signed-in users can read profiles; only the profile owner can edit/delete. Email stays in Appwrite Auth, outside readable profile rows.",
+    "posts": "Signed-in users can read posts; only the author can edit/delete.",
+    "likes": "Signed-in users can read likes and create their own; only the creator can remove their like. Liking never grants permission to edit the post.",
+    "saves": "Only the account that creates a bookmark can read/delete it.",
+    "images": "Images are public to anyone with the URL. Only the uploader can update/delete. Allowed PNG/JPEG/WebP, at most 10 MiB."
+  }
+}

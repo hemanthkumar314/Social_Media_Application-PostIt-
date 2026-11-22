@@ -3,6 +3,7 @@ import { useDeletesavePost, useGetCurrentUser, useLikePost, useSavePost } from "
 import { checkIsLiked } from "@/lib/utils";
 import { Models } from "appwrite";
 import { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 type PostStatsProps ={
     post?: Models.Document;
@@ -11,28 +12,27 @@ type PostStatsProps ={
 
 const PostStats = ({post,userId}:PostStatsProps) => {
 
-  const likesList = post?.likes.map((user:Models.Document)=>user.$id)
-
-  const [ likes, setLikes] = useState<string[]>(likesList);
-  const [ isSaved, setIsSaved] = useState(false);
+  const [ likes, setLikes] = useState<string[]>(() => (post?.likes ?? []).map((user:Models.Document)=>user.$id));
+  const { toast } = useToast();
   
-  const { mutate : likePost } = useLikePost();
-  const { mutate : savePost } = useSavePost();
-  const { mutate : deleteSavedpost } = useDeletesavePost();
+  const { mutate : likePost, isPending:isLiking } = useLikePost();
+  const { mutate : savePost, isPending:isSaving } = useSavePost();
+  const { mutate : deleteSavedpost, isPending:isDeletingSave } = useDeletesavePost();
 
-  const { data : currentuser } = useGetCurrentUser();
+  const { data : currentuser, isPending:isUserLoading } = useGetCurrentUser();
 
-  const savedPostRecord = currentuser?.save.find((record:Models.Document)=>
-    record.post.$id === post?.$id
+  const savedPostRecord = currentuser?.save?.find((record:Models.Document)=>
+    record.post?.$id === post?.$id
   );
+  const isSaved = !!savedPostRecord;
 
   useEffect(()=>{
-    setIsSaved(!!savedPostRecord);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[currentuser])
+    setLikes((post?.likes ?? []).map((user:Models.Document)=>user.$id));
+  },[post?.likes])
 
   const handleLikePost = (e:React.MouseEvent) =>{
     e.stopPropagation();
+    if (!post?.$id || !userId || isLiking) return;
 
     let newLikes = [...likes];
 
@@ -46,19 +46,26 @@ const PostStats = ({post,userId}:PostStatsProps) => {
     }
 
     setLikes(newLikes);
-    likePost({postId:post?.$id || '',likesArray:newLikes})
+    const previousLikes = likes;
+    const fail = () => {
+      setLikes(previousLikes);
+      toast({title:'Unable to update your like. Please try again.'});
+    };
+    likePost({postId:post.$id,likesArray:newLikes}, {onError:fail, onSuccess:(result) => {if (!result) fail();}})
   }
 
   const handleSavePost = (e:React.MouseEvent) =>{
     e.stopPropagation();
+    if (!post?.$id || !userId || !currentuser || isSaving || isDeletingSave) return;
+
+    const fail = () => {toast({title:'Unable to update saved posts. Please try again.'});};
+    const callbacks = {onError:fail, onSuccess:(result:unknown) => {if (!result) fail();}};
 
     if(savedPostRecord){
-      setIsSaved(false);
-      deleteSavedpost(savedPostRecord.$id);
+      deleteSavedpost(savedPostRecord.$id, callbacks);
     }
     else{
-      savePost({postId:post?.$id || '',userId})
-      setIsSaved(true);
+      savePost({postId:post.$id,userId}, callbacks)
     }
       
   }
@@ -66,26 +73,28 @@ const PostStats = ({post,userId}:PostStatsProps) => {
   return (
     <div className="z-20 flex items-start justify-between">
       <div className="flex gap-2 mr-5">
+        <button type="button" aria-label="Like post" aria-pressed={checkIsLiked(likes,userId)} disabled={!post?.$id || !userId || isLiking} onClick={handleLikePost}>
         <img
             src={checkIsLiked(likes,userId) ? "/assets/icons/liked.svg":"/assets/icons/like.svg"}
             alt="like"
             width={20}
             height={20}
-            onClick={handleLikePost}
             className="cursor-pointer"
         />
+        </button>
         <p className="small-medium lg:base-medium">{likes.length}</p>
       </div>
 
       <div className="flex gap-2 ">
+        <button type="button" aria-label="Save post" aria-pressed={isSaved} disabled={!post?.$id || !userId || isUserLoading || !currentuser || isSaving || isDeletingSave} onClick={handleSavePost}>
         <img
             src={isSaved ? "/assets/icons/saved.svg":"/assets/icons/save.svg"}
-            alt="like"
+            alt="save"
             width={20}
             height={20}
-            onClick={handleSavePost}
             className="cursor-pointer"
         />
+        </button>
       </div>
     </div>
   )

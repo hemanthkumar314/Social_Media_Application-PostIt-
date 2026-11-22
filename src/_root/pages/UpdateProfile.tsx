@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
@@ -32,47 +33,58 @@ const UpdateProfile = () => {
       file: [],
       name: user.name,
       username: user.username,
-      email: user.email,
       bio: user.bio || "",
     },
   });
 
   // Queries
-  const { data: currentUser } = useGetUserById(id || "");
+  const { data: currentUser, isPending, isError } = useGetUserById(id || "");
   const { mutateAsync: updateUser, isPending: isLoadingUpdate } =
     useUpdateUser();
 
-  if (!currentUser)
+  const { reset } = form;
+  useEffect(() => {
+    if (currentUser) reset({file: [], name: currentUser.name, username: currentUser.username, bio: currentUser.bio ?? ''});
+  }, [currentUser, reset]);
+
+  if (isPending)
     return (
       <div className="w-full h-full flex-center">
         <Loader />
       </div>
     );
 
+  if (isError || !currentUser) return <p role="alert" className="common-container">Unable to load this profile.</p>;
+  if (currentUser.$id !== user.id) return <p role="alert" className="common-container">You can only edit your own profile.</p>;
+
   // Handler
   const handleUpdate = async (value: z.infer<typeof ProfileValidation>) => {
+    try {
     const updatedUser = await updateUser({
       userId: currentUser.$id,
       name: value.name,
       bio: value.bio,
       file: value.file,
       imageUrl: currentUser.imageUrl,
-      imageId: currentUser.imageId,
+      imageId: currentUser.imageId ?? '',
     });
 
     if (!updatedUser) {
-      toast({
+      return toast({
         title: `Update user failed. Please try again.`,
       });
     }
 
     setUser({
       ...user,
-      name: updatedUser?.name,
-      bio: updatedUser?.bio,
-      imageUrl: updatedUser?.imageUrl,
+      name: updatedUser.name,
+      bio: updatedUser.bio ?? '',
+      imageUrl: updatedUser.imageUrl,
     });
     return navigate(`/profile/${id}`);
+    } catch {
+      toast({title: 'Update user failed. Please try again.'});
+    }
   };
 
   return (
@@ -144,25 +156,6 @@ const UpdateProfile = () => {
 
             <FormField
               control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="shad-form_label">Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      className="shad-input"
-                      {...field}
-                      disabled
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="bio"
               render={({ field }) => (
                 <FormItem>
@@ -182,13 +175,14 @@ const UpdateProfile = () => {
               <Button
                 type="button"
                 className="shad-button_dark_4"
+                disabled={form.formState.isSubmitting || isLoadingUpdate}
                 onClick={() => navigate(-1)}>
                 Cancel
               </Button>
               <Button
                 type="submit"
                 className="shad-button_primary whitespace-nowrap"
-                disabled={isLoadingUpdate}>
+                disabled={form.formState.isSubmitting || isLoadingUpdate}>
                 {isLoadingUpdate && <Loader />}
                 Update Profile
               </Button>
