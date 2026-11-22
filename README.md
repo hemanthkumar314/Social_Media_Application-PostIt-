@@ -1,6 +1,6 @@
 # PostIt (Social Media Application)
 
-[Live application](https://postit-hemanth1704.vercel.app) · [Source repository](https://github.com/hemanthkumar314/Social_Media_Application)
+[Live application](https://postit-hemanth1704.vercel.app) · [Source repository](https://github.com/hemanthkumar314/Connect2People)
 
 ## Overview
 PostIt is a React + TypeScript social application built with Vite, Tailwind CSS, shadcn/Radix components, React Query, React Hook Form, and Zod. The browser calls Appwrite for authentication, database records, and file storage. A small Appwrite Function privately resolves usernames during login.
@@ -81,8 +81,8 @@ The toolchain currently targets Vite 5; dependency and toolchain upgrades remain
 
 1. Clone the Repository:
    ```bash
-   git clone https://github.com/hemanthkumar314/Social_Media_Application.git
-   cd Social_Media_Application
+   git clone https://github.com/hemanthkumar314/Connect2People.git PostIt
+   cd PostIt
    ```
 2. Install the locked dependencies with `npm ci`. Dependency folders are ignored by Git; use `package-lock.json` to reproduce the install.
 3. Copy `.env.example` to `.env.local`. The template contains placeholders, not usable credentials. The `VITE_*` variables are public browser configuration; never put server API keys in them.
